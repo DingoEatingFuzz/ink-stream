@@ -1,0 +1,22 @@
+<title>Xterm Demo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.19.0/css/xterm.css"/>
+<script src="https://cdn.jsdelivr.net/npm/xterm@4.19.0/lib/xterm.min.js"></script>
+<div id="terminal"></div>
+<script>
+  var term = new Terminal({ convertEol: true });
+  term.open(document.getElementById('terminal'));
+
+
+  fetch('/logs').then(async res => {
+    const reader = res.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (value) {
+        term.write(value);
+      }
+
+      if (done) break;
+    }
+  })
+</script>
