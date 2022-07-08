@@ -1,7 +1,6 @@
-# fly.toml file generated for xterm-ink on 2022-07-07T14:57:39-07:00
+# fly.toml file generated for xterm-ink on 2022-07-08T12:02:16-07:00
 
 app = "xterm-ink"
-
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
@@ -10,7 +9,9 @@ processes = []
   builder = "heroku/buildpacks:20"
 
 [env]
-  PORT = "4000"
+  PORT = "8080"
+  TERM = "xterm-256color"
+  FORCE_COLOR = 1
 
 [experimental]
   allowed_public_ports = []
@@ -22,7 +23,6 @@ processes = []
   processes = ["app"]
   protocol = "tcp"
   script_checks = []
-
   [services.concurrency]
     hard_limit = 25
     soft_limit = 20
