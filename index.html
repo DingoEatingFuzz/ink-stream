@@ -1,22 +1,42 @@
 <title>Xterm Demo</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.19.0/css/xterm.css"/>
 <script src="https://cdn.jsdelivr.net/npm/xterm@4.19.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-base64@3.7.2/base64.min.js"></script>
 <div id="terminal"></div>
+<p/>
+<button id="abort">Stop streaming</button>
 <script>
   var term = new Terminal({ convertEol: true });
   term.open(document.getElementById('terminal'));
 
+  const controller = new AbortController();
+  document.querySelector('#abort').addEventListener('click', () => controller.abort());
 
-  fetch('/logs').then(async res => {
+  fetch('/logs-b64', { signal: controller.signal }).then(async res => {
     const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
     while (true) {
-      const { done, value } = await reader.read();
+      try {
+        const { done, value } = await reader.read();
 
-      if (value) {
-        term.write(value);
+        if (value) {
+          // Split on newlines
+          const [ remainder, ...chunks ] = decoder.decode(value).split('\n');
+          const lines = [ buffer + remainder ];
+          buffer = chunks.pop();
+          lines.push(...chunks);
+          lines.forEach(line => {
+            term.write(Base64.decode(JSON.parse(line).frame));
+          })
+        }
+
+        if (done) break;
+      } catch (err) {
+        console.error(err);
+        break;
       }
-
-      if (done) break;
     }
   })
 </script>
